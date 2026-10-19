@@ -1,0 +1,5 @@
+[
+  { "id": "zengguang", "title": "增广贤文", "file": "quotes/zengguang.txt" },
+  { "id": "jp-dates", "title": "日语 · 月份与日期", "file": "japanese/dates.txt" },
+  { "id": "words", "title": "Words", "file": "words/words.txt" }
+]

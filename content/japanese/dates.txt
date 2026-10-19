@@ -1,0 +1,56 @@
+# 月份（～月 がつ gatsu）
+1月 | いちがつ · ichigatsu
+2月 | にがつ · nigatsu
+3月 | さんがつ · sangatsu
+4月 | しがつ · shigatsu（✔不是よんがつ）
+5月 | ごがつ · gogatsu
+6月 | ろくがつ · rokugatsu
+7月 | しちがつ · shichigatsu（✔不是なながつ）
+8月 | はちがつ · hachigatsu
+9月 | くがつ · kugatsu（✔不是きゅうがつ）
+10月 | じゅうがつ · juugatsu
+11月 | じゅういちがつ · juuichigatsu
+12月 | じゅうにがつ · juunigatsu
+
+# 日期 1～10日（必须背特例）
+1日 | ついたち · tsuitachi
+2日 | ふつか · futsuka
+3日 | みっか · mikka
+4日 | よっか · yokka
+5日 | いつか · itsuka
+6日 | むいか · muika
+7日 | なのか · nanoka
+8日 | ようか · youka
+9日 | ここのか · kokonoka
+10日 | とおか · tooka
+
+# 日期 11～31日（大部分数字＋にち，3个额外特例）
+11日 | じゅういちにち · juuichinichi
+12日 | じゅうににち · juuninichi
+13日 | じゅうさんにち · juusannichi
+14日 | じゅうよっか · juuyokka（特例）
+15日 | じゅうごにち · juugonichi
+16日 | じゅうろくにち · juurokunichi
+17日 | じゅうしちにち · juushichinichi
+18日 | じゅうはちにち · juuhachinichi
+19日 | じゅうくにち · juukunichi
+20日 | はつか · hatsuka（特例）
+21日 | にじゅういちにち · nijuuichinichi
+22日 | にじゅうににち · nijuuninichi
+23日 | にじゅうさんにち · nijuusannichi
+24日 | にじゅうよっか · nijuuyokka（特例）
+25日 | にじゅうごにち · nijuugonichi
+26日 | にじゅうろくにち · nijuurokunichi
+27日 | にじゅうしちにち · nijuushichinichi
+28日 | にじゅうはちにち · nijuuhachinichi
+29日 | にじゅうくにち · nijuukunichi
+30日 | さんじゅうにち · sanjuunichi
+31日 | さんじゅういちにち · sanjuuichinichi
+
+# 完整读法：X月X日（【月】＋【日】）
+5月5日 | ごがつ いつか · gogatsu itsuka
+10月20日 | じゅうがつ はつか · juugatsu hatsuka
+4月14日 | しがつ じゅうよっか · shigatsu juuyokka
+
+# 小提醒
+いちにち 是“1号”吗？ | 不是！いちにち 意思是“一整天”，1号固定读 ついたち
