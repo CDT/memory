@@ -66,8 +66,55 @@ const renderNav = (activeId) => {
         .join("");
 };
 
-const cardHtml = (item) => {
+const shuffle = (values) => {
+    const copy = [...values];
+    for (let index = copy.length - 1; index > 0; index--) {
+        const swap = Math.floor(Math.random() * (index + 1));
+        [copy[index], copy[swap]] = [copy[swap], copy[index]];
+    }
+    return copy;
+};
+
+const wordClue = (word) => {
+    const letters = [...word];
+    const positions = letters.map((char, index) => /[a-z]/i.test(char) && index > 0 && index < letters.length - 1 ? index : -1).filter((index) => index >= 0);
+    const hidden = shuffle(positions).slice(0, Math.max(1, Math.floor(positions.length * 0.4)));
+    for (const index of hidden) letters[index] = "_";
+    return letters.join("");
+};
+
+const quoteParts = (quote) => {
+    const match = quote.match(/^(.+[，,；;：:])\s*(.+?)([。！？.!?]?)$/);
+    if (match) return { lead: match[1], answer: match[2], end: match[3] };
+    const plain = quote.replace(/[。！？.!?]$/, "");
+    const answerLength = Math.max(1, Math.floor([...plain].length / 2));
+    return { lead: [...plain].slice(0, -answerLength).join(""), answer: [...plain].slice(-answerLength).join(""), end: quote.slice(plain.length) };
+};
+
+const cardHtml = (item, deckItems = []) => {
     const meta = [item.deck.title, item.section].filter(Boolean).map(escapeHtml).join(" · ");
+    if (item.deck.mode === "words") {
+        const answer = item.front;
+        const distractors = shuffle(deckItems.filter((other) => other.front !== answer))
+            .sort((a, b) => Math.abs(a.front.length - answer.length) - Math.abs(b.front.length - answer.length))
+            .slice(0, 3);
+        const choices = shuffle([item, ...distractors]);
+        return `<article class="card quiz-card">
+            <p class="card-meta">${meta} · Choose the matching word</p>
+            <p class="card-front word-clue" aria-label="Word with missing letters">${escapeHtml(wordClue(answer))}</p>
+            <div class="choices" role="group" aria-label="Answer choices">
+                ${choices.map((choice) => `<button class="choice" type="button" data-correct="${choice.front === answer}">${escapeHtml(choice.front)}</button>`).join("")}
+            </div>
+            <p class="feedback" role="status" aria-live="polite"></p>
+        </article>`;
+    }
+    if (item.deck.mode === "quote") {
+        const { lead, answer, end } = quoteParts(item.front);
+        return `<article class="card quiz-card">
+            <p class="card-meta">${meta} · Fill in the blank</p>
+            <p class="card-front quote-clue">${escapeHtml(lead)}<button class="quote-blank reveal" type="button" aria-label="Reveal missing words">点击揭晓</button><span class="quote-answer" hidden>${escapeHtml(answer)}</span>${escapeHtml(end)}</p>
+        </article>`;
+    }
     const back = item.back
         ? `<button class="reveal" type="button">Show answer</button>
            <p class="card-back" hidden>${escapeHtml(item.back)}</p>`
@@ -77,6 +124,19 @@ const cardHtml = (item) => {
         <p class="card-front">${escapeHtml(item.front)}</p>
         ${back}
     </article>`;
+};
+
+const bindCard = () => {
+    app.querySelector(".reveal")?.addEventListener("click", reveal);
+    app.querySelectorAll(".choice").forEach((choice) => choice.addEventListener("click", () => {
+        const correct = choice.dataset.correct === "true";
+        app.querySelectorAll(".choice").forEach((button) => {
+            button.disabled = true;
+            if (button.dataset.correct === "true") button.classList.add("correct");
+        });
+        if (!correct) choice.classList.add("incorrect");
+        app.querySelector(".feedback").textContent = correct ? "Correct!" : "The highlighted answer is correct.";
+    }));
 };
 
 const renderRandom = async () => {
@@ -102,10 +162,10 @@ const renderRandom = async () => {
 
     app.innerHTML = `
         <div class="chips" role="group" aria-label="Filter">${chips}</div>
-        ${pick ? cardHtml(pick) : `<p class="empty">Nothing here yet.</p>`}
+        ${pick ? cardHtml(pick, items.filter((item) => item.deck.id === pick.deck.id)) : `<p class="empty">Nothing here yet.</p>`}
         <div class="actions">
             <button id="next" class="primary" type="button">Another</button>
-            <span class="hint">Space to reveal / next</span>
+            <span class="hint">${pick?.deck.mode === "words" ? "Choose an answer" : "Space to reveal"} · → for another</span>
         </div>`;
 
     app.querySelectorAll(".chip").forEach((chip) =>
@@ -114,10 +174,16 @@ const renderRandom = async () => {
             renderRandom();
         }));
     app.querySelector("#next").addEventListener("click", renderRandom);
-    app.querySelector(".reveal")?.addEventListener("click", reveal);
+    bindCard();
 };
 
 const reveal = () => {
+    const quoteAnswer = app.querySelector(".quote-answer");
+    if (quoteAnswer && quoteAnswer.hidden) {
+        quoteAnswer.hidden = false;
+        app.querySelector(".quote-blank")?.remove();
+        return true;
+    }
     const back = app.querySelector(".card-back");
     if (!back || !back.hidden) return false;
     back.hidden = false;
@@ -125,7 +191,21 @@ const reveal = () => {
     return true;
 };
 
-const renderList = (deck, items) => {
+const renderPractice = (deck, items) => {
+    const fresh = items.filter((item) => `${deck.id}:${item.front}` !== lastPickKey);
+    const candidates = fresh.length ? fresh : items;
+    const pick = candidates[Math.floor(Math.random() * candidates.length)];
+    if (pick) lastPickKey = `${deck.id}:${pick.front}`;
+    app.innerHTML = `<div class="deck-head"><h1>${escapeHtml(deck.title)} <span class="count">${items.length}</span></h1>
+        <button id="browse" class="text-button" type="button">Browse all</button></div>
+        ${pick ? cardHtml({ ...pick, deck }, items) : `<p class="empty">Nothing here yet.</p>`}
+        ${pick ? `<div class="actions"><button id="next" class="primary" type="button">Another</button></div>` : ""}`;
+    app.querySelector("#browse").addEventListener("click", () => renderList(deck, items, true));
+    app.querySelector("#next")?.addEventListener("click", () => renderPractice(deck, items));
+    bindCard();
+};
+
+const renderList = (deck, items, showPractice = false) => {
     const sections = [];
     for (const item of items) {
         if (!sections.length || sections.at(-1).title !== item.section) sections.push({ title: item.section, items: [] });
@@ -150,10 +230,12 @@ const renderList = (deck, items) => {
     app.innerHTML = `
         <div class="deck-head">
             <h1>${escapeHtml(deck.title)} <span class="count">${items.length}</span></h1>
+            ${showPractice ? `<button id="practice" class="text-button" type="button">Practice</button>` : ""}
             ${items.length ? `<input id="search" type="search" placeholder="Filter…" aria-label="Filter items">` : ""}
         </div>
         ${items.length ? body : `<p class="empty">Nothing here yet. Add lines to <code>content/${escapeHtml(deck.file)}</code>.</p>`}`;
 
+    app.querySelector("#practice")?.addEventListener("click", () => renderPractice(deck, items));
     app.querySelector("#search")?.addEventListener("input", (event) => {
         const query = event.target.value.trim().toLowerCase();
         app.querySelectorAll(".items li").forEach((li) => { li.hidden = !li.dataset.search.includes(query); });
@@ -177,6 +259,7 @@ const renderDeck = async (id) => {
     }
     const data = await loadDeck(deck);
     if (isNote(deck)) await renderNote(deck, data);
+    else if (deck.mode === "words" || deck.mode === "quote") renderPractice(deck, data);
     else renderList(deck, data);
 };
 
@@ -192,10 +275,14 @@ const route = async () => {
 };
 
 document.addEventListener("keydown", (event) => {
-    if (location.hash.startsWith("#/deck/") || event.target.closest("input, textarea, button")) return;
+    if (event.target.closest("input, textarea, button")) return;
+    if (location.hash.startsWith("#/deck/") && !app.querySelector(".quiz-card")) return;
     if (event.key === " " || event.key === "ArrowRight") {
         event.preventDefault();
-        if (event.key === "ArrowRight" || !reveal()) renderRandom();
+        if (event.key === "ArrowRight" || !reveal()) {
+            if (location.hash.startsWith("#/deck/")) app.querySelector("#next")?.click();
+            else renderRandom();
+        }
     }
 });
 
@@ -213,3 +300,7 @@ const init = async () => {
 };
 
 init();
+
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("service-worker.js").catch(() => {}));
+}

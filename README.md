@@ -1,6 +1,6 @@
 # Memory
 
-A static site for words, quotes, grammar and anything else worth remembering. It shows a random item on the home page, and every deck has its own browsable page. Served by GitHub Pages straight from the repo root, with no build step.
+A static, installable app for words, quotes, grammar and anything else worth remembering. It shows a random question on the home page, and every deck has its own page. The Words deck uses multiple choice spelling questions; quote decks hide part of a line until tapped. The site caches its current decks for offline use after the first visit. Served by GitHub Pages straight from the repo root, with no build step.
 
 ## Adding content
 
@@ -24,6 +24,8 @@ Blank lines are ignored.
 
 - `.txt` files are item lists and show up in the random picker.
 - `.md` files are notes (e.g. grammar write-ups). They're rendered as a reference page and are not part of the random picker.
+- Add `"mode": "words"` for spelling multiple choice, or `"mode": "quote"` for tap-to-reveal fill-in-the-blank practice.
+- When adding or changing deck files, update `ASSETS` and the cache version in `service-worker.js` so offline copies refresh.
 
 ## Running locally
 

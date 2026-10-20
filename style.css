@@ -112,6 +112,38 @@ a { color: var(--accent); }
     cursor: pointer;
 }
 
+.quote-blank {
+    display: inline;
+    margin: 0 3px;
+    padding: 2px 10px;
+    vertical-align: baseline;
+    color: var(--accent);
+    border-color: var(--accent);
+    font-family: var(--sans);
+    font-size: 0.65em;
+}
+.quote-answer { color: var(--accent); font-weight: 700; }
+.word-clue { letter-spacing: 0.04em; }
+.choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 24px; }
+.choice {
+    min-height: 52px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    overflow-wrap: anywhere;
+}
+.choice:not(:disabled):hover { border-color: var(--accent); }
+.choice.correct { border-color: #26825c; background: #26825c; color: white; }
+.choice.incorrect { border-color: var(--accent); color: var(--accent); }
+.feedback { min-height: 1.5em; margin: 12px 0 0; color: var(--muted); }
+.text-button { border: 0; background: none; color: var(--accent); font: inherit; cursor: pointer; }
+@media (max-width: 480px) { .choices { grid-template-columns: 1fr; } }
+
 .actions { display: flex; align-items: center; gap: 16px; margin-top: 20px; }
 .primary {
     background: var(--accent);
