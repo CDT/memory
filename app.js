@@ -75,14 +75,6 @@ const shuffle = (values) => {
     return copy;
 };
 
-const wordClue = (word) => {
-    const letters = [...word];
-    const positions = letters.map((char, index) => /[a-z]/i.test(char) && index > 0 && index < letters.length - 1 ? index : -1).filter((index) => index >= 0);
-    const hidden = shuffle(positions).slice(0, Math.max(1, Math.floor(positions.length * 0.4)));
-    for (const index of hidden) letters[index] = "_";
-    return letters.join("");
-};
-
 const quoteParts = (quote) => {
     const match = quote.match(/^(.+[，,；;：:])\s*(.+?)([。！？.!?]?)$/);
     if (match) return { lead: match[1], answer: match[2], end: match[3] };
@@ -95,13 +87,17 @@ const cardHtml = (item, deckItems = []) => {
     const meta = [item.deck.title, item.section].filter(Boolean).map(escapeHtml).join(" · ");
     if (item.deck.mode === "words") {
         const answer = item.front;
-        const distractors = shuffle(deckItems.filter((other) => other.front !== answer))
-            .sort((a, b) => Math.abs(a.front.length - answer.length) - Math.abs(b.front.length - answer.length))
-            .slice(0, 3);
+        const seen = new Set([answer, item.back]);
+        const distractors = shuffle(deckItems).filter((other) => {
+            if (!other.back || seen.has(other.front) || seen.has(other.back)) return false;
+            seen.add(other.front);
+            seen.add(other.back);
+            return true;
+        }).slice(0, 3);
         const choices = shuffle([item, ...distractors]);
         return `<article class="card quiz-card">
-            <p class="card-meta">${meta} · Choose the matching word</p>
-            <p class="card-front word-clue" aria-label="Word with missing letters">${escapeHtml(wordClue(answer))}</p>
+            <p class="card-meta">${meta} · 选择对应的英文</p>
+            <p class="card-front" lang="zh-CN">${escapeHtml(item.back)}</p>
             <div class="choices" role="group" aria-label="Answer choices">
                 ${choices.map((choice) => `<button class="choice" type="button" data-correct="${choice.front === answer}">${escapeHtml(choice.front)}</button>`).join("")}
             </div>
@@ -135,7 +131,7 @@ const bindCard = () => {
             if (button.dataset.correct === "true") button.classList.add("correct");
         });
         if (!correct) choice.classList.add("incorrect");
-        app.querySelector(".feedback").textContent = correct ? "Correct!" : "The highlighted answer is correct.";
+        app.querySelector(".feedback").textContent = correct ? "答对了！" : `正确答案：${app.querySelector('.choice.correct').textContent}`;
     }));
 };
 

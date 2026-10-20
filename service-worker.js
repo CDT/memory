@@ -1,4 +1,4 @@
-const CACHE = "memory-v4";
+const CACHE = "memory-v7";
 const ASSETS = [
     "./",
     "index.html",
@@ -14,7 +14,8 @@ const ASSETS = [
 ];
 
 self.addEventListener("install", (event) => {
-    event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
+    const freshAssets = ASSETS.map((url) => new Request(url, { cache: "reload" }));
+    event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(freshAssets)).then(() => self.skipWaiting()));
 });
 
 self.addEventListener("activate", (event) => {
